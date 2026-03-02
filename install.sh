@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
 
@@ -83,3 +85,9 @@ clone_if_missing "https://github.com/zsh-users/zsh-autosuggestions" "$ZSH_CUSTOM
 clone_if_missing "https://github.com/zsh-users/zsh-syntax-highlighting.git" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 clone_if_missing "https://github.com/jeffreytse/zsh-vi-mode" "$ZSH_CUSTOM/plugins/zsh-vi-mode"
 clone_if_missing "https://github.com/romkatv/powerlevel10k.git" "$ZSH_CUSTOM/themes/powerlevel10k"
+
+cd "$REPO_ROOT"
+echo "Running GNU Stow dry-run intentionally before applying links."
+echo "If conflicts exist, Stow should fail loudly so collisions can be resolved manually."
+stow -n -v -t "$HOME" zsh git
+stow -v -t "$HOME" zsh git
