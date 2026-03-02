@@ -17,7 +17,7 @@ stow -t "$HOME" zsh git
 ## Supported targets
 
 - **macOS**: uses **Homebrew** for package installation.
-- **Ubuntu 24.04** (and similar Debian/Ubuntu Linux): uses **apt** when passwordless sudo is available.
+- **Ubuntu 24.04** (and similar Debian/Ubuntu Linux): runs `apt-get update` when passwordless sudo is available, then uses **Homebrew** for package installation.
 - **Coder-compatible**: supports `CODER=true` environments (skips shell switching).
 
 ## Quickstart
@@ -41,12 +41,12 @@ If `~/.oh-my-zsh` is missing, the installer runs Oh My Zsh in non-interactive mo
 
 ### Sudo / no-sudo behavior on Linux
 
-On Linux, package install is attempted with apt **only when passwordless sudo is available**.
+On Linux, the installer attempts `apt-get update` **only when passwordless sudo is available**.
 
-- If passwordless sudo exists: installs required packages (including `gh` and `lazygit`) via `sudo apt-get ...`.
-- If not: package install is skipped, and the script only verifies required tools are already installed.
+- If passwordless sudo exists: runs `sudo apt-get update` to refresh existing apt metadata.
+- If not: apt update is skipped.
 
-If required tools are missing after verification, the script exits with an error.
+In both cases, package installation is handled by Homebrew, and required tools are verified afterwards.
 
 ### Stow dry-run, then apply
 
@@ -67,7 +67,7 @@ Stow still fails loudly for any other collision so unexpected conflicts are not 
 
 The installer is designed to be safely re-runnable:
 
-- Dependency installation is naturally idempotent (`brew install` / `apt-get install` for already-installed packages).
+- Dependency installation is naturally idempotent (`brew install` for already-installed packages; Linux may also refresh apt metadata with `apt-get update`).
 - Oh My Zsh install only runs if `~/.oh-my-zsh` does not already exist.
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
