@@ -22,13 +22,12 @@ install_with_brew() {
   brew install git curl ca-certificates zsh stow gh lazygit
 }
 
-install_with_apt_if_possible() {
+apt_update_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
     sudo apt-get update
-    sudo apt-get install -y git curl ca-certificates zsh stow gh lazygit
   else
-    echo "Passwordless sudo is unavailable; skipping apt package installation."
-    echo "Will only verify required tools are present."
+    echo "Passwordless sudo is unavailable; skipping apt metadata update."
+    echo "Will continue with Homebrew package installation and tool verification."
   fi
 }
 
@@ -139,7 +138,8 @@ case "$(uname -s)" in
     install_with_brew
     ;;
   Linux)
-    install_with_apt_if_possible
+    apt_update_if_possible
+    install_with_brew
     ;;
   *)
     echo "Error: unsupported platform: $(uname -s)" >&2
