@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ZSH_DIR="$HOME/.oh-my-zsh"
+ZSH_CUSTOM="${ZSH_DIR}/custom"
+
 required_tools=(git curl zsh stow)
 
 install_with_brew() {
@@ -60,3 +63,23 @@ esac
 verify_required_tools
 
 echo "All required tools are installed: ${required_tools[*]}"
+
+if [[ ! -d "$ZSH_DIR" ]]; then
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
+
+mkdir -p "$ZSH_DIR" "$ZSH_CUSTOM/plugins" "$ZSH_CUSTOM/themes"
+
+clone_if_missing() {
+  local repo_url="$1"
+  local target_dir="$2"
+
+  if [[ ! -d "$target_dir" ]]; then
+    git clone "$repo_url" "$target_dir"
+  fi
+}
+
+clone_if_missing "https://github.com/zsh-users/zsh-autosuggestions" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+clone_if_missing "https://github.com/zsh-users/zsh-syntax-highlighting.git" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+clone_if_missing "https://github.com/jeffreytse/zsh-vi-mode" "$ZSH_CUSTOM/plugins/zsh-vi-mode"
+clone_if_missing "https://github.com/romkatv/powerlevel10k.git" "$ZSH_CUSTOM/themes/powerlevel10k"
