@@ -4,7 +4,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 
 ## Repository structure
 
-- `install.sh` – bootstrap script that installs dependencies, installs Oh My Zsh + plugins/themes, runs Stow, and optionally switches your login shell.
+- `install.sh` – bootstrap script that installs dependencies (including `gh` and `lazygit`), installs Oh My Zsh + plugins/themes, runs Stow, and optionally switches your login shell.
 - `zsh/` – Zsh-related dotfiles (for example `.zshrc`, `.p10k.zsh`).
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
 
@@ -17,7 +17,7 @@ stow -t "$HOME" zsh git
 ## Supported targets
 
 - **macOS**: uses **Homebrew** for package installation.
-- **Ubuntu 24.04** (and similar Debian/Ubuntu Linux): uses **apt** when passwordless sudo is available.
+- **Ubuntu 24.04** (and similar Debian/Ubuntu Linux): uses **Homebrew** for package installation and optionally runs apt refresh/upgrade when passwordless sudo is available.
 - **Coder-compatible**: supports `CODER=true` environments (skips shell switching).
 
 ## Quickstart
@@ -41,12 +41,16 @@ If `~/.oh-my-zsh` is missing, the installer runs Oh My Zsh in non-interactive mo
 
 ### Sudo / no-sudo behavior on Linux
 
-On Linux, package install is attempted with apt **only when passwordless sudo is available**.
+On Linux, package installation uses Homebrew (same as macOS), including `gh` and `lazygit`.
 
-- If passwordless sudo exists: installs required packages via `sudo apt-get ...`.
-- If not: package install is skipped, and the script only verifies required tools are already installed.
+If passwordless sudo is available, the installer also runs:
 
-If required tools are missing after verification, the script exits with an error.
+- `sudo apt-get update`
+- `sudo apt-get upgrade -y`
+
+This apt step is only for refreshing/upgrading already-installed apt-managed packages; it is not used to install dotfiles dependencies.
+
+If passwordless sudo is unavailable, apt refresh/upgrade is skipped and bootstrap continues with Homebrew-only installation.
 
 ### Stow dry-run, then apply
 

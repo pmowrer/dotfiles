@@ -5,30 +5,43 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
-required_tools=(git curl zsh stow)
+required_tools=(git curl zsh stow gh lazygit)
+
+setup_brew_shellenv() {
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  elif [[ -x "$HOME/.linuxbrew/bin/brew" ]]; then
+    eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+  fi
+}
 
 install_with_brew() {
   if ! command -v brew >/dev/null 2>&1; then
     echo "Homebrew not found. Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    if [[ -x /opt/homebrew/bin/brew ]]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [[ -x /usr/local/bin/brew ]]; then
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
   fi
 
-  brew install git curl ca-certificates zsh stow
+  setup_brew_shellenv
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Error: Homebrew installation completed but brew is still not in PATH." >&2
+    exit 1
+  fi
+
+  brew install git curl ca-certificates zsh stow gh lazygit
 }
 
-install_with_apt_if_possible() {
+refresh_linux_packages_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
+    echo "Refreshing apt package index and upgrading installed packages..."
     sudo apt-get update
-    sudo apt-get install -y git curl ca-certificates zsh stow
+    sudo apt-get upgrade -y
   else
-    echo "Passwordless sudo is unavailable; skipping apt package installation."
-    echo "Will only verify required tools are present."
+    echo "Passwordless sudo is unavailable; skipping apt refresh/upgrade."
   fi
 }
 
@@ -139,7 +152,8 @@ case "$(uname -s)" in
     install_with_brew
     ;;
   Linux)
-    install_with_apt_if_possible
+    refresh_linux_packages_if_possible
+    install_with_brew
     ;;
   *)
     echo "Error: unsupported platform: $(uname -s)" >&2
