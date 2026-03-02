@@ -4,7 +4,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 
 ## Repository structure
 
-- `install.sh` – bootstrap script that installs dependencies, installs Oh My Zsh + plugins/themes, runs Stow, and optionally switches your login shell.
+- `install.sh` – bootstrap script that installs dependencies (including `gh` and `lazygit`), installs Oh My Zsh + plugins/themes, runs Stow, and optionally switches your login shell.
 - `zsh/` – Zsh-related dotfiles (for example `.zshrc`, `.p10k.zsh`).
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
 
@@ -43,7 +43,7 @@ If `~/.oh-my-zsh` is missing, the installer runs Oh My Zsh in non-interactive mo
 
 On Linux, package install is attempted with apt **only when passwordless sudo is available**.
 
-- If passwordless sudo exists: installs required packages via `sudo apt-get ...`.
+- If passwordless sudo exists: installs required packages (including `gh` and `lazygit`) via `sudo apt-get ...`.
 - If not: package install is skipped, and the script only verifies required tools are already installed.
 
 If required tools are missing after verification, the script exits with an error.

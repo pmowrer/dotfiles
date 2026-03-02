@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
-required_tools=(git curl zsh stow)
+required_tools=(git curl zsh stow gh lazygit)
 
 install_with_brew() {
   if ! command -v brew >/dev/null 2>&1; then
@@ -19,13 +19,13 @@ install_with_brew() {
     fi
   fi
 
-  brew install git curl ca-certificates zsh stow
+  brew install git curl ca-certificates zsh stow gh lazygit
 }
 
 install_with_apt_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
     sudo apt-get update
-    sudo apt-get install -y git curl ca-certificates zsh stow
+    sudo apt-get install -y git curl ca-certificates zsh stow gh lazygit
   else
     echo "Passwordless sudo is unavailable; skipping apt package installation."
     echo "Will only verify required tools are present."
