@@ -59,12 +59,9 @@ This gives you an explicit preflight check before links are created.
 
 ### Conflict handling
 
-If Stow detects file collisions/conflicts, it fails loudly so you can resolve them manually.
+Before running Stow, the installer backs up only the managed targets (`~/.zshrc`, `~/.p10k.zsh`, `~/.gitconfig`) when they are regular files or conflicting symlinks, using a `.pre-dotfiles-backup.<timestamp>` suffix.
 
-Typical resolution workflow:
-
-1. Back up or remove conflicting files in `$HOME`.
-2. Re-run `./install.sh`.
+Stow still fails loudly for any other collision so unexpected conflicts are not auto-overwritten.
 
 ### Idempotency guarantees
 
@@ -80,13 +77,3 @@ The installer is designed to be safely re-runnable:
 If `CODER=true` is set in the environment, `install.sh` skips `chsh` shell switching.
 
 This is useful in remote/devcontainer/Coder setups where changing login shell is not desirable or not permitted.
-
-## User-specific settings
-
-For machine/user-local shell settings that should not be committed, create:
-
-```bash
-~/.zshrc.<username>
-```
-
-It is sourced automatically from `.zshrc` when present.
