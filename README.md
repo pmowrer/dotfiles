@@ -1,12 +1,35 @@
-Shared dot files across systems. 
+# dotfiles
 
-Inspired by: https://github.com/drwahl/bash-profile
+Managed with GNU Stow using package directories.
 
-Install
-=======
-Clone the repository into the user's home directory. Enter the repository directory and run `setup.sh` to symlink the user's dotfiles to those of the repository.
+## Layout
 
-User specific settings
-======================
-For bash-profiles, additional, non-shared settings can be loaded by creating `.profile.<username>` inside the user's home directory.
+- `zsh/.zshrc`
+- `zsh/.p10k.zsh`
+- `git/.gitconfig`
 
+These package names are intentionally `zsh` and `git` so this command works as-is:
+
+```bash
+stow -t "$HOME" zsh git
+```
+
+## Install
+
+From the repo root:
+
+```bash
+./install.sh
+```
+
+This script validates that `stow` is installed and then runs `stow -t "$HOME" zsh git`.
+
+## User-specific settings
+
+For machine/user-local shell settings that should not be committed, create:
+
+```bash
+~/.zshrc.<username>
+```
+
+It is sourced automatically from `.zshrc` when present.
