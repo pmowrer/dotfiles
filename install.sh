@@ -7,28 +7,46 @@ ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
 required_tools=(git curl zsh stow gh lazygit)
 
+ensure_brew_in_path() {
+  local brew_bin=""
+
+  if command -v brew >/dev/null 2>&1; then
+    brew_bin="$(command -v brew)"
+  elif [[ -x /opt/homebrew/bin/brew ]]; then
+    brew_bin="/opt/homebrew/bin/brew"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    brew_bin="/usr/local/bin/brew"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    brew_bin="/home/linuxbrew/.linuxbrew/bin/brew"
+  fi
+
+  if [[ -n "$brew_bin" ]]; then
+    eval "$(\"$brew_bin\" shellenv)"
+  fi
+
+  command -v brew >/dev/null 2>&1
+}
+
 install_with_brew() {
-  if ! command -v brew >/dev/null 2>&1; then
+  if ! ensure_brew_in_path; then
     echo "Homebrew not found. Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
 
-    if [[ -x /opt/homebrew/bin/brew ]]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [[ -x /usr/local/bin/brew ]]; then
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
+  if ! ensure_brew_in_path; then
+    echo "Error: Homebrew was installed but 'brew' is still unavailable in PATH." >&2
+    exit 1
   fi
 
   brew install git curl ca-certificates zsh stow gh lazygit
 }
 
-install_with_apt_if_possible() {
+apt_update_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
     sudo apt-get update
-    sudo apt-get install -y git curl ca-certificates zsh stow gh lazygit
   else
-    echo "Passwordless sudo is unavailable; skipping apt package installation."
-    echo "Will only verify required tools are present."
+    echo "Passwordless sudo is unavailable; skipping apt metadata update."
+    echo "Will continue with Homebrew package installation and tool verification."
   fi
 }
 
@@ -139,7 +157,8 @@ case "$(uname -s)" in
     install_with_brew
     ;;
   Linux)
-    install_with_apt_if_possible
+    apt_update_if_possible
+    install_with_brew
     ;;
   *)
     echo "Error: unsupported platform: $(uname -s)" >&2
