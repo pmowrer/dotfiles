@@ -91,3 +91,21 @@ echo "Running GNU Stow dry-run intentionally before applying links."
 echo "If conflicts exist, Stow should fail loudly so collisions can be resolved manually."
 stow -n -v -t "$HOME" zsh git
 stow -v -t "$HOME" zsh git
+
+current_shell_path="${SHELL:-}"
+current_shell_name="${current_shell_path##*/}"
+zsh_path="$(command -v zsh)"
+
+if [[ "$current_shell_name" == "zsh" ]]; then
+  echo "Current login shell is already zsh; skipping chsh."
+elif [[ "${CODER:-}" == "true" ]]; then
+  echo "CODER=true detected; skipping chsh in this environment."
+else
+  echo "Attempting to set login shell to zsh..."
+  if chsh -s "$zsh_path"; then
+    echo "Login shell updated to zsh."
+  else
+    echo "Unable to change login shell automatically."
+    echo "Run this command manually if you want to switch: chsh -s \"$zsh_path\""
+  fi
+fi
