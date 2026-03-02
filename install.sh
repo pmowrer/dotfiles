@@ -35,7 +35,7 @@ install_with_brew() {
   brew install git curl ca-certificates zsh stow gh lazygit
 }
 
-refresh_linux_packages_if_possible() {
+install_with_apt_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
     echo "Refreshing apt package index and upgrading installed packages..."
     sudo apt-get update
@@ -152,7 +152,7 @@ case "$(uname -s)" in
     install_with_brew
     ;;
   Linux)
-    refresh_linux_packages_if_possible
+    install_with_apt_if_possible
     install_with_brew
     ;;
   *)
