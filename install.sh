@@ -8,15 +8,24 @@ ZSH_CUSTOM="${ZSH_DIR}/custom"
 required_tools=(git curl zsh stow gh lazygit)
 
 install_with_brew() {
+  local brew_bin=""
+
   if ! command -v brew >/dev/null 2>&1; then
     echo "Homebrew not found. Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
 
-    if [[ -x /opt/homebrew/bin/brew ]]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [[ -x /usr/local/bin/brew ]]; then
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
+  if brew_bin="$(command -v brew 2>/dev/null)"; then
+    eval "$("$brew_bin" shellenv)"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  elif [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  else
+    echo "Error: Homebrew installation completed, but brew was not found on PATH." >&2
+    exit 1
   fi
 
   brew install git curl ca-certificates zsh stow gh lazygit
