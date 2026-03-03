@@ -1,4 +1,4 @@
-# Ensure common Homebrew prefixes are on PATH before plugin loading.
+# Make Homebrew binaries available for login shells.
 if [[ -d /home/linuxbrew/.linuxbrew/bin ]]; then
   export PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
 elif [[ -d /opt/homebrew/bin ]]; then
@@ -10,19 +10,3 @@ fi
 if command -v brew >/dev/null 2>&1; then
   eval "$(brew shellenv)"
 fi
-
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_CUSTOM="${ZSH}/custom"
-ZSH_THEME="powerlevel10k/powerlevel10k"
-
-plugins=(
-  git
-  gh
-  zsh-vi-mode
-  zsh-autosuggestions
-  zsh-syntax-highlighting
-)
-
-source "$ZSH/oh-my-zsh.sh"
-
-[ -f "${HOME}/.p10k.zsh" ] && source "${HOME}/.p10k.zsh"
