@@ -1,3 +1,16 @@
+# Ensure common Homebrew prefixes are on PATH before plugin loading.
+if [[ -d /home/linuxbrew/.linuxbrew/bin ]]; then
+  export PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+elif [[ -d /opt/homebrew/bin ]]; then
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+elif [[ -d /usr/local/bin ]]; then
+  export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+fi
+
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+fi
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH}/custom"
 ZSH_THEME="powerlevel10k/powerlevel10k"
