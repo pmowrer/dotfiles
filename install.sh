@@ -28,7 +28,7 @@ install_with_brew() {
     exit 1
   fi
 
-  brew install git curl ca-certificates zsh stow gh lazygit
+  brew install git curl ca-certificates zsh stow gh lazygit claude-code
 }
 
 apt_update_if_possible() {
