@@ -48,6 +48,8 @@ On Linux, the installer attempts `apt-get update` **only when passwordless sudo 
 
 In both cases, package installation is handled by Homebrew, and required tools are verified afterwards.
 
+Before running `brew install`, the installer checks whether each managed tool is already available on `PATH` and only installs missing tools with Homebrew.
+
 ### Stow dry-run, then apply
 
 The installer intentionally runs Stow twice:
@@ -68,6 +70,7 @@ Stow still fails loudly for any other collision so unexpected conflicts are not 
 The installer is designed to be safely re-runnable:
 
 - Dependency installation is naturally idempotent (`brew install` for already-installed packages; Linux may also refresh apt metadata with `apt-get update`).
+- Homebrew installation is minimized by skipping packages whose corresponding commands are already available on the system.
 - Oh My Zsh install only runs if `~/.oh-my-zsh` does not already exist.
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
