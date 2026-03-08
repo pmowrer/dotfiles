@@ -6,6 +6,20 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
 required_tools=(git curl zsh stow gh lazygit)
+brew_packages=(git curl zsh stow gh lazygit claude-code)
+
+brew_command_for_package() {
+  local package="$1"
+
+  case "$package" in
+    claude-code)
+      echo "claude"
+      ;;
+    *)
+      echo "$package"
+      ;;
+  esac
+}
 
 install_with_brew() {
   local brew_bin=""
@@ -28,7 +42,25 @@ install_with_brew() {
     exit 1
   fi
 
-  brew install git curl ca-certificates zsh stow gh lazygit claude-code
+  local packages_to_install=()
+  local package
+  local command_name
+
+  for package in "${brew_packages[@]}"; do
+    command_name="$(brew_command_for_package "$package")"
+
+    if command -v "$command_name" >/dev/null 2>&1; then
+      echo "Found $command_name on system; skipping brew install for $package."
+    else
+      packages_to_install+=("$package")
+    fi
+  done
+
+  if (( ${#packages_to_install[@]} > 0 )); then
+    brew install "${packages_to_install[@]}"
+  else
+    echo "All Homebrew-managed tools are already available; skipping brew install."
+  fi
 }
 
 apt_update_if_possible() {
