@@ -97,7 +97,7 @@ backup_conflicting_target_if_needed() {
   local backup
 
   if [[ -L "$target" ]]; then
-    if [[ "$(readlink "$target")" == "$expected" ]]; then
+    if [[ "$target" -ef "$expected" ]]; then
       return
     fi
 
