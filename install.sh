@@ -90,6 +90,22 @@ verify_required_tools() {
   echo "All required tools are installed: ${required_tools[*]}"
 }
 
+install_cw_if_coder() {
+  if [[ "${CODER:-}" != "true" ]]; then
+    echo "CODER=true not detected; skipping cw CLI installation."
+    return
+  fi
+
+  if command -v cw >/dev/null 2>&1; then
+    echo "cw CLI already found on PATH; skipping installation."
+    return
+  fi
+
+  echo "CODER=true detected; installing cw CLI..."
+  gh api -H 'Accept: application/vnd.github.v3.raw' \
+    "repos/coreweave/cw-eng-cli/contents/scripts/install.sh" | bash
+}
+
 backup_conflicting_target_if_needed() {
   local rel_path="$1"
   local target="$HOME/$rel_path"
@@ -189,6 +205,7 @@ case "$(uname -s)" in
 esac
 
 verify_required_tools
+install_cw_if_coder
 install_oh_my_zsh_if_missing
 install_plugins_and_theme
 prepare_stow_targets

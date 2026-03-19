@@ -18,7 +18,7 @@ stow -t "$HOME" zsh git
 
 - **macOS**: uses **Homebrew** for package installation.
 - **Ubuntu 24.04** (and similar Debian/Ubuntu Linux): runs `apt-get update` when passwordless sudo is available, then uses **Homebrew** for package installation.
-- **Coder-compatible**: supports `CODER=true` environments (skips shell switching).
+- **Coder-compatible**: supports `CODER=true` environments (installs `cw` CLI and skips shell switching).
 
 ## Quickstart
 
@@ -77,6 +77,9 @@ The installer is designed to be safely re-runnable:
 
 ### `CODER=true` behavior
 
-If `CODER=true` is set in the environment, `install.sh` skips `chsh` shell switching.
+If `CODER=true` is set in the environment, `install.sh`:
+
+- installs the `cw` CLI when it is not already available on `PATH`
+- skips `chsh` shell switching
 
 This is useful in remote/devcontainer/Coder setups where changing login shell is not desirable or not permitted.
