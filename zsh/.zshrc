@@ -1,39 +1,18 @@
-# Ensure common Homebrew prefixes are on PATH before plugin loading.
-if [[ -d /home/linuxbrew/.linuxbrew/bin ]]; then
-  export PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
-elif [[ -d /opt/homebrew/bin ]]; then
-  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-elif [[ -d /usr/local/bin ]]; then
-  export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-if command -v brew >/dev/null 2>&1; then
-  eval "$(brew shellenv)"
-fi
-
+# Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-ZSH_CUSTOM="${ZSH}/custom"
+
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
-plugins=(
-  git
-  gh
-  zsh-vi-mode
-  zsh-autosuggestions
-  zsh-syntax-highlighting
-)
+plugins=(git gh zsh-vi-mode zsh-autosuggestions zsh-syntax-highlighting)
 
-source "$ZSH/oh-my-zsh.sh"
+source $ZSH/oh-my-zsh.sh
 
-[ -f "${HOME}/.p10k.zsh" ] && source "${HOME}/.p10k.zsh"
-
-if command -v brew >/dev/null 2>&1; then
-  eval "$(brew shellenv)"
-elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-elif [[ -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -x /usr/local/bin/brew ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
-
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
