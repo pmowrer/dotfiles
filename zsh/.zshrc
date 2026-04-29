@@ -12,7 +12,17 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(git gh zsh-vi-mode zsh-autosuggestions zsh-syntax-highlighting)
 
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
+
+# Ensure backspace works reliably across SSH terminal variants.
+bindkey '^?' backward-delete-char
+bindkey '^H' backward-delete-char
+
+# Convenience aliases used in interactive sessions.
+alias l='ls -lah'
+
+# Enable direnv integration for zsh.
+eval "$(direnv hook zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
