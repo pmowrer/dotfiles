@@ -16,3 +16,6 @@ source $ZSH/oh-my-zsh.sh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Keep this at the end so template appends are effectively a no-op.
+eval "$(direnv hook zsh)"
