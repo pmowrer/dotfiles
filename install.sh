@@ -63,6 +63,49 @@ install_with_brew() {
   fi
 }
 
+self_heal_managed_files() {
+  # Coder workspace restores have been observed to truncate files in this
+  # repo to zero bytes (s3 streaming flakiness). The Coder template's
+  # install_direnv script then writes the direnv hook through the still-valid
+  # symlinks back into our stowed files, leaving them as a single-line
+  # `eval "$(direnv hook ...)"`. That breaks the next interactive shell.
+  #
+  # Detect that exact pattern — uncommitted modifications to files we manage —
+  # and restore them from HEAD before we proceed. Then attempt a fast-forward
+  # to origin so HEAD is itself up to date. --ff-only means we never clobber
+  # legitimate local commits; we only undo the corruption.
+  cd "$REPO_ROOT"
+
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    return
+  fi
+
+  local managed=(zsh/.zshrc zsh/.zprofile zsh/.p10k.zsh git/.gitconfig)
+  local dirty=()
+  local f
+
+  for f in "${managed[@]}"; do
+    if [[ -e "$f" ]] && ! git diff --quiet -- "$f" 2>/dev/null; then
+      dirty+=("$f")
+    fi
+  done
+
+  if (( ${#dirty[@]} > 0 )); then
+    echo "Detected uncommitted modifications in managed files: ${dirty[*]}"
+    echo "Likely Coder workspace-restore corruption; restoring from HEAD."
+    git checkout -- "${dirty[@]}"
+  fi
+
+  local branch
+  branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  if [[ -n "$branch" && "$branch" != "HEAD" ]]; then
+    if git fetch --quiet origin "$branch" 2>/dev/null; then
+      git merge --ff-only "origin/$branch" 2>/dev/null \
+        || echo "Could not fast-forward to origin/$branch; staying on local HEAD."
+    fi
+  fi
+}
+
 apt_update_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
     sudo apt-get update
@@ -173,6 +216,8 @@ maybe_switch_shell() {
     fi
   fi
 }
+
+self_heal_managed_files
 
 case "$(uname -s)" in
   Darwin)
