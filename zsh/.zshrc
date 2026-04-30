@@ -12,7 +12,19 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(git gh zsh-vi-mode zsh-autosuggestions zsh-syntax-highlighting)
 
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
+
+# Fall back to xterm-256color when the remote box lacks the advertised
+# terminfo entry (e.g. Ghostty's xterm-ghostty over SSH). Avoids the
+# "terminal is not fully functional" warnings and the doubled-character /
+# broken-backspace symptoms that follow from a missing terminfo.
+if [[ -n "$SSH_CONNECTION" ]] && ! infocmp "$TERM" >/dev/null 2>&1; then
+  export TERM=xterm-256color
+fi
+
+# Ensure backspace works reliably across SSH terminal variants.
+bindkey '^?' backward-delete-char
+bindkey '^H' backward-delete-char
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
