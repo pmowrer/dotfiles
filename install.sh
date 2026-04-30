@@ -80,7 +80,7 @@ self_heal_managed_files() {
     return
   fi
 
-  local managed=(zsh/.zshrc zsh/.zprofile zsh/.p10k.zsh git/.gitconfig)
+  local managed=(zsh/.zshrc zsh/.zprofile zsh/.p10k.zsh git/.gitconfig ghostty/.config/ghostty/config)
   local dirty=()
   local f
 
@@ -161,6 +161,7 @@ prepare_stow_targets() {
   backup_conflicting_target_if_needed ".zshrc" "zsh/.zshrc"
   backup_conflicting_target_if_needed ".p10k.zsh" "zsh/.p10k.zsh"
   backup_conflicting_target_if_needed ".gitconfig" "git/.gitconfig"
+  backup_conflicting_target_if_needed ".config/ghostty/config" "ghostty/.config/ghostty/config"
 }
 
 install_oh_my_zsh_if_missing() {
@@ -192,8 +193,11 @@ run_stow() {
   cd "$REPO_ROOT"
   echo "Running GNU Stow dry-run intentionally before applying links."
   echo "If conflicts exist, Stow should fail loudly so collisions can be resolved manually."
-  stow -n -v -t "$HOME" zsh git
-  stow -v -t "$HOME" zsh git
+  # Ensure parent dirs exist so stow can fold individual files into them
+  # without trying to symlink whole shared trees like ~/.config.
+  mkdir -p "$HOME/.config/ghostty"
+  stow -n -v --no-folding -t "$HOME" zsh git ghostty
+  stow -v --no-folding -t "$HOME" zsh git ghostty
 }
 
 maybe_switch_shell() {

@@ -7,11 +7,12 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 - `install.sh` – bootstrap script that installs dependencies (including `gh` and `lazygit`), installs Oh My Zsh + plugins/themes, runs Stow, and optionally switches your login shell.
 - `zsh/` – Zsh-related dotfiles (for example `.zshrc`, `.p10k.zsh`).
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
+- `ghostty/` – Ghostty terminal config under `.config/ghostty/config` (works on macOS and Linux; ignored if Ghostty is not installed).
 
-These package names are intentionally `zsh` and `git` so this command works as-is:
+These package names match their Stow targets so this command works as-is:
 
 ```bash
-stow -t "$HOME" zsh git
+stow -t "$HOME" zsh git ghostty
 ```
 
 ## Supported targets
@@ -61,7 +62,7 @@ This gives you an explicit preflight check before links are created.
 
 ### Conflict handling
 
-Before running Stow, the installer backs up only the managed targets (`~/.zshrc`, `~/.p10k.zsh`, `~/.gitconfig`) when they are regular files or conflicting symlinks, using a `.pre-dotfiles-backup.<timestamp>` suffix. Symlinks that already resolve to the expected dotfiles target are treated as non-conflicting (even if their link text is relative).
+Before running Stow, the installer backs up only the managed targets (`~/.zshrc`, `~/.p10k.zsh`, `~/.gitconfig`, `~/.config/ghostty/config`) when they are regular files or conflicting symlinks, using a `.pre-dotfiles-backup.<timestamp>` suffix. Symlinks that already resolve to the expected dotfiles target are treated as non-conflicting (even if their link text is relative).
 
 Stow still fails loudly for any other collision so unexpected conflicts are not auto-overwritten.
 
