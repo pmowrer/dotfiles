@@ -1,0 +1,22 @@
+background-opacity = 0.9
+
+# Turn off audible/visible bell
+bell-features = no-audio,no-system,no-attention
+
+# Visor: ctrl+t
+keybind = global:ctrl+t=toggle_quick_terminal
+
+quick-terminal-animation-duration = 0.15
+quick-terminal-autohide = true
+quick-terminal-position = center
+quick-terminal-size = 90%,80%
+
+# Theme
+theme = Tomorrow Night Eighties
+font-family = "SF Mono"
+font-size = 16
+
+shell-integration-features = ssh-terminfo
+
+# Optional: start in a specific directory
+working-directory = ~
