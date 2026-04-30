@@ -29,4 +29,14 @@ bindkey '^H' backward-delete-char
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Workaround for a Coder workspace template bug: a startup script
+# `grep -Fxq`s ~/.zshrc for the literal line `eval "$(direnv hook zsh)"`
+# and appends it if absent. Since our ~/.zshrc is a stow symlink into
+# this repo, that append lands here, and combined with flaky workspace
+# restores it can clobber the file. Keeping the line verbatim, on its
+# own line and unindented, makes the grep match so nothing is written.
+# The `command -v` guard lets the same config work on machines without
+# direnv. Remove this block once the upstream template is fixed.
+if command -v direnv >/dev/null 2>&1; then
 eval "$(direnv hook zsh)"
+fi
