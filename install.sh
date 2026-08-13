@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
 required_tools=(git curl zsh stow gh lazygit)
-brew_packages=(git curl zsh stow gh lazygit claude-code)
+brew_packages=(git curl zsh stow gh lazygit claude-code codex herdr)
 
 brew_command_for_package() {
   local package="$1"
@@ -80,7 +80,7 @@ self_heal_managed_files() {
     return
   fi
 
-  local managed=(zsh/.zshrc zsh/.zprofile zsh/.p10k.zsh git/.gitconfig ghostty/.config/ghostty/config)
+  local managed=(zsh/.zshrc zsh/.zshenv zsh/.zprofile zsh/.p10k.zsh git/.gitconfig ghostty/.config/ghostty/config)
   local dirty=()
   local f
 
@@ -159,6 +159,7 @@ backup_conflicting_target_if_needed() {
 
 prepare_stow_targets() {
   backup_conflicting_target_if_needed ".zshrc" "zsh/.zshrc"
+  backup_conflicting_target_if_needed ".zshenv" "zsh/.zshenv"
   backup_conflicting_target_if_needed ".p10k.zsh" "zsh/.p10k.zsh"
   backup_conflicting_target_if_needed ".gitconfig" "git/.gitconfig"
   backup_conflicting_target_if_needed ".config/ghostty/config" "ghostty/.config/ghostty/config"
