@@ -201,6 +201,16 @@ run_stow() {
   stow -v --no-folding -t "$HOME" zsh git ghostty
 }
 
+start_hivemind_if_installed() {
+  # Coder boxes have no systemd user bus, so the HiveMind daemon runs as a
+  # plain background process with nothing to revive it after a workspace
+  # restart. Start it here; the command is a no-op when already running.
+  if [[ -x "$HOME/.local/bin/hivemind" ]]; then
+    "$HOME/.local/bin/hivemind" start \
+      || echo "hivemind failed to start; run 'hivemind doctor' to investigate."
+  fi
+}
+
 maybe_switch_shell() {
   local current_shell_name="${SHELL##*/}"
   local zsh_path
@@ -243,4 +253,5 @@ install_oh_my_zsh_if_missing
 install_plugins_and_theme
 prepare_stow_targets
 run_stow
+start_hivemind_if_installed
 maybe_switch_shell
