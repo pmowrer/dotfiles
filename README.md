@@ -44,10 +44,10 @@ If `~/.oh-my-zsh` is missing, the installer runs Oh My Zsh in non-interactive mo
 
 On Linux, the installer attempts `apt-get update` **only when passwordless sudo is available**.
 
-- If passwordless sudo exists: runs `sudo apt-get update` to refresh existing apt metadata.
+- If passwordless sudo exists: runs `sudo apt-get update` to refresh existing apt metadata. A failure (including lock contention with another Coder startup task) is logged but does not stop the Homebrew bootstrap.
 - If not: apt update is skipped.
 
-In both cases, package installation is handled by Homebrew, and required tools are verified afterwards.
+In both cases, package installation is handled by Homebrew, Homebrew's confirmation prompts are disabled for unattended Coder startup, and required tools are verified afterwards.
 
 Before running `brew install`, the installer checks whether each managed tool is already available on `PATH` and only installs missing tools with Homebrew.
 
@@ -70,6 +70,7 @@ Stow still fails loudly for any other collision so unexpected conflicts are not 
 
 The installer is designed to be safely re-runnable:
 
+- Existing Homebrew installations are detected in their standard prefixes even when the calling process has not initialized Homebrew's `PATH`.
 - Dependency installation is naturally idempotent (`brew install` for already-installed packages; Linux may also refresh apt metadata with `apt-get update`).
 - Homebrew installation is minimized by skipping packages whose corresponding commands are already available on the system.
 - Oh My Zsh install only runs if `~/.oh-my-zsh` does not already exist.

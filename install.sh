@@ -21,26 +21,42 @@ brew_command_for_package() {
   esac
 }
 
+find_brew() {
+  local brew_candidate
+
+  if brew_candidate="$(command -v brew 2>/dev/null)"; then
+    printf '%s\n' "$brew_candidate"
+    return 0
+  fi
+
+  for brew_candidate in \
+    /home/linuxbrew/.linuxbrew/bin/brew \
+    /opt/homebrew/bin/brew \
+    /usr/local/bin/brew
+  do
+    if [[ -x "$brew_candidate" ]]; then
+      printf '%s\n' "$brew_candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 install_with_brew() {
   local brew_bin=""
 
-  if ! command -v brew >/dev/null 2>&1; then
+  if ! brew_bin="$(find_brew)"; then
     echo "Homebrew not found. Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    if ! brew_bin="$(find_brew)"; then
+      echo "Error: Homebrew installation completed, but brew was not found." >&2
+      exit 1
+    fi
   fi
 
-  if brew_bin="$(command -v brew 2>/dev/null)"; then
-    eval "$("$brew_bin" shellenv)"
-  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  elif [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-  else
-    echo "Error: Homebrew installation completed, but brew was not found on PATH." >&2
-    exit 1
-  fi
+  eval "$("$brew_bin" shellenv)"
 
   local packages_to_install=()
   local package
@@ -57,7 +73,9 @@ install_with_brew() {
   done
 
   if (( ${#packages_to_install[@]} > 0 )); then
-    brew install "${packages_to_install[@]}"
+    # Homebrew 6 enables ask mode by default when an install has dependencies.
+    # Coder runs this script without anyone available to confirm a prompt.
+    HOMEBREW_NO_ASK=1 "$brew_bin" install "${packages_to_install[@]}"
   else
     echo "All Homebrew-managed tools are already available; skipping brew install."
   fi
@@ -108,7 +126,13 @@ self_heal_managed_files() {
 
 apt_update_if_possible() {
   if sudo -n true >/dev/null 2>&1; then
-    sudo apt-get update
+    # Other Coder startup tasks can run apt at the same time and hold its
+    # lists lock. An apt metadata refresh is helpful, but it is not required
+    # here because this script installs its packages with Homebrew. Do not let
+    # transient apt lock contention prevent the actual bootstrap from running.
+    if ! sudo apt-get update; then
+      echo "Warning: apt metadata update failed; continuing with Homebrew installation." >&2
+    fi
   else
     echo "Passwordless sudo is unavailable; skipping apt metadata update."
     echo "Will continue with Homebrew package installation and tool verification."
