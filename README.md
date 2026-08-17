@@ -8,6 +8,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 - `zsh/` – Zsh-related dotfiles (for example `.zshrc`, `.p10k.zsh`).
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
 - `ghostty/` – Ghostty terminal config under `.config/ghostty/config` (works on macOS and Linux; ignored if Ghostty is not installed).
+- `scripts/configure-codex-defaults.sh` – preserves the existing Codex config while making Vim mode the default for new sessions.
 
 These package names match their Stow targets so this command works as-is:
 
@@ -60,6 +61,10 @@ The installer intentionally runs Stow twice:
 
 This gives you an explicit preflight check before links are created.
 
+### Codex Vim mode
+
+The installer sets `tui.vim_mode_default = true` in `~/.codex/config.toml`, so each new Codex session starts in Vim normal mode. Existing Codex settings are preserved, including machine-local project trust, MCP server, and hook state; the updater is idempotent and does not replace the whole config with a Stow symlink.
+
 ### Conflict handling
 
 Before running Stow, the installer backs up only the managed targets (`~/.zshrc`, `~/.p10k.zsh`, `~/.gitconfig`, `~/.config/ghostty/config`) when they are regular files or conflicting symlinks, using a `.pre-dotfiles-backup.<timestamp>` suffix. Symlinks that already resolve to the expected dotfiles target are treated as non-conflicting (even if their link text is relative).
@@ -76,6 +81,7 @@ The installer is designed to be safely re-runnable:
 - Oh My Zsh install only runs if `~/.oh-my-zsh` does not already exist.
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
+- The Codex config updater only changes the Vim-mode default and leaves an already-correct config untouched.
 
 ### `CODER=true` behavior
 

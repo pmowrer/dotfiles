@@ -225,6 +225,10 @@ run_stow() {
   stow -v --no-folding -t "$HOME" zsh git ghostty
 }
 
+configure_codex_defaults() {
+  "$REPO_ROOT/scripts/configure-codex-defaults.sh"
+}
+
 start_hivemind_if_installed() {
   # Coder boxes have no systemd user bus, so the HiveMind daemon runs as a
   # plain background process with nothing to revive it after a workspace
@@ -277,5 +281,6 @@ install_oh_my_zsh_if_missing
 install_plugins_and_theme
 prepare_stow_targets
 run_stow
+configure_codex_defaults
 start_hivemind_if_installed
 maybe_switch_shell
