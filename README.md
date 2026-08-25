@@ -9,6 +9,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
 - `ghostty/` – Ghostty terminal config under `.config/ghostty/config` (works on macOS and Linux; ignored if Ghostty is not installed).
 - `scripts/configure-codex-defaults.sh` – preserves the existing Codex config while making Vim mode the default for new sessions.
+- [`docs/terminal-browser.md`](docs/terminal-browser.md) – recovery guide for running terminal-browser on a headless Ubuntu 24.04 Coder workspace.
 
 These package names match their Stow targets so this command works as-is:
 
