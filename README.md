@@ -67,6 +67,14 @@ This gives you an explicit preflight check before links are created.
 
 The installer sets `tui.vim_mode_default = true` in `~/.codex/config.toml`, so each new Codex session starts in Vim normal mode. Existing Codex settings are preserved, including machine-local project trust, MCP server, and hook state; the updater is idempotent and does not replace the whole config with a Stow symlink.
 
+### Herdr agent session restore
+
+The installer runs `herdr integration install codex` and `herdr integration install claude` before applying the agent-specific defaults. These integrations persist native session references so Herdr can resume supported Codex and Claude conversations after a full server restart. Re-running the installer refreshes the managed integration hooks safely.
+
+### Herdr pane task usage
+
+Powerlevel10k normally starts one `gitstatusd` per interactive shell and derives its worker count from the host CPU count. On a large Coder host, many Herdr panes can therefore consume hundreds of systemd tasks before any agents run. The managed `.zshenv` defaults `GITSTATUS_NUM_THREADS` to `2`, while preserving an explicit value supplied by the environment.
+
 ### Claude Code Vim mode
 
 The installer sets `"editorMode": "vim"` in `~/.claude/settings.json` (or `$CLAUDE_CONFIG_DIR/settings.json`), so each new Claude Code session starts in Vim normal mode. `Esc` enters normal mode, `i` returns to insert.
@@ -89,6 +97,7 @@ The installer is designed to be safely re-runnable:
 - Oh My Zsh install only runs if `~/.oh-my-zsh` does not already exist.
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
+- Herdr's Codex and Claude integration installers can be re-run to refresh their managed hooks.
 - The Codex config updater only changes the Vim-mode default and leaves an already-correct config untouched.
 - The Claude Code settings updater behaves the same way, and refuses to write if `settings.json` is not valid JSON.
 

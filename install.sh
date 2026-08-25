@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
-required_tools=(git curl zsh stow gh lazygit jq)
+required_tools=(git curl zsh stow gh lazygit jq claude codex herdr)
 brew_packages=(git curl zsh stow gh lazygit jq claude-code codex herdr)
 
 brew_command_for_package() {
@@ -233,6 +233,17 @@ configure_claude_defaults() {
   "$REPO_ROOT/scripts/configure-claude-defaults.sh"
 }
 
+configure_herdr_integrations() {
+  local integration
+
+  # These integrations persist each agent's native session reference so a
+  # restored Herdr pane can resume the conversation after a server restart.
+  for integration in codex claude; do
+    echo "Installing Herdr integration for $integration..."
+    herdr integration install "$integration"
+  done
+}
+
 start_hivemind_if_installed() {
   # Coder boxes have no systemd user bus, so the HiveMind daemon runs as a
   # plain background process with nothing to revive it after a workspace
@@ -285,6 +296,7 @@ install_oh_my_zsh_if_missing
 install_plugins_and_theme
 prepare_stow_targets
 run_stow
+configure_herdr_integrations
 configure_codex_defaults
 configure_claude_defaults
 start_hivemind_if_installed

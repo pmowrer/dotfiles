@@ -6,6 +6,12 @@
 # .zprofile re-run `brew shellenv` without entries piling up.
 typeset -U path PATH
 
+# Powerlevel10k starts one gitstatusd per interactive shell and otherwise
+# sizes each daemon from the host CPU count. A Coder workspace with many Herdr
+# panes can exhaust its systemd task limit before the agents themselves do.
+# Two workers keep VCS prompts responsive while avoiding hundreds of threads.
+export GITSTATUS_NUM_THREADS="${GITSTATUS_NUM_THREADS:-2}"
+
 if [[ -z "${HOMEBREW_PREFIX:-}" ]]; then
   for _brew_candidate in \
     /home/linuxbrew/.linuxbrew/bin/brew \
