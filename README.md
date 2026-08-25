@@ -9,6 +9,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 - `git/` – Git-related dotfiles (for example `.gitconfig`).
 - `ghostty/` – Ghostty terminal config under `.config/ghostty/config` (works on macOS and Linux; ignored if Ghostty is not installed).
 - `scripts/configure-codex-defaults.sh` – preserves the existing Codex config while making Vim mode the default for new sessions.
+- `scripts/configure-claude-defaults.sh` – same idea for Claude Code: merges `"editorMode": "vim"` into `~/.claude/settings.json` without disturbing the rest of the file.
 - [`docs/terminal-browser.md`](docs/terminal-browser.md) – recovery guide for running terminal-browser on a headless Ubuntu 24.04 Coder workspace.
 
 These package names match their Stow targets so this command works as-is:
@@ -66,6 +67,12 @@ This gives you an explicit preflight check before links are created.
 
 The installer sets `tui.vim_mode_default = true` in `~/.codex/config.toml`, so each new Codex session starts in Vim normal mode. Existing Codex settings are preserved, including machine-local project trust, MCP server, and hook state; the updater is idempotent and does not replace the whole config with a Stow symlink.
 
+### Claude Code Vim mode
+
+The installer sets `"editorMode": "vim"` in `~/.claude/settings.json` (or `$CLAUDE_CONFIG_DIR/settings.json`), so each new Claude Code session starts in Vim normal mode. `Esc` enters normal mode, `i` returns to insert.
+
+Claude Code owns this file and rewrites it when you change settings from inside the TUI, and other tooling adds hooks and status lines to it, so it is merged with `jq` rather than stowed. Existing keys are preserved and the updater is idempotent. Toggling with `/vim` inside a session writes the same key, so the two stay consistent.
+
 ### Conflict handling
 
 Before running Stow, the installer backs up only the managed targets (`~/.zshrc`, `~/.p10k.zsh`, `~/.gitconfig`, `~/.config/ghostty/config`) when they are regular files or conflicting symlinks, using a `.pre-dotfiles-backup.<timestamp>` suffix. Symlinks that already resolve to the expected dotfiles target are treated as non-conflicting (even if their link text is relative).
@@ -83,6 +90,7 @@ The installer is designed to be safely re-runnable:
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
 - The Codex config updater only changes the Vim-mode default and leaves an already-correct config untouched.
+- The Claude Code settings updater behaves the same way, and refuses to write if `settings.json` is not valid JSON.
 
 ### `CODER=true` behavior
 

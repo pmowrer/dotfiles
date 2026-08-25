@@ -5,8 +5,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
-required_tools=(git curl zsh stow gh lazygit)
-brew_packages=(git curl zsh stow gh lazygit claude-code codex herdr)
+required_tools=(git curl zsh stow gh lazygit jq)
+brew_packages=(git curl zsh stow gh lazygit jq claude-code codex herdr)
 
 brew_command_for_package() {
   local package="$1"
@@ -229,6 +229,10 @@ configure_codex_defaults() {
   "$REPO_ROOT/scripts/configure-codex-defaults.sh"
 }
 
+configure_claude_defaults() {
+  "$REPO_ROOT/scripts/configure-claude-defaults.sh"
+}
+
 start_hivemind_if_installed() {
   # Coder boxes have no systemd user bus, so the HiveMind daemon runs as a
   # plain background process with nothing to revive it after a workspace
@@ -282,5 +286,6 @@ install_plugins_and_theme
 prepare_stow_targets
 run_stow
 configure_codex_defaults
+configure_claude_defaults
 start_hivemind_if_installed
 maybe_switch_shell
