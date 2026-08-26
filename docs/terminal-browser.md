@@ -89,24 +89,77 @@ Expected results:
 - `chrome-sandbox` is owned by the workspace user and has mode `755`, not
   `4755`.
 
-## Launch on this headless machine
+## Launch and use with a coding agent
 
-Disable GPU acceleration for each launch:
+This applies to any terminal coding agent, Codex and Claude Code alike. The
+split it depends on is not agent-specific: browser *control* travels over
+terminal-browser's CLI and works from anywhere, while browser *rendering*
+belongs to a terminal pane that speaks the Kitty graphics protocol.
+
+The visible browser must therefore be launched from a real terminal pane that
+supports that protocol, such as Ghostty or Kitty. The reliable workflow is:
+
+1. Open a sibling terminal pane outside Herdr.
+2. Launch the browser directly from that pane:
+
+   ```bash
+   TERMINAL_BROWSER_DISABLE_GPU=1 \
+     terminal-browser open https://play.grafana.org/explore
+   ```
+
+3. Leave the browser pane open and ask the agent to attach to it.
+
+An agent can find and control the directly launched browser from another
+session:
 
 ```bash
-TERMINAL_BROWSER_DISABLE_GPU=1 \
-  terminal-browser open https://terminal-browser.com
+terminal-browser ls --all --json
+terminal-browser action --browser <browser-key> --tab <tab-id> -- snapshot
 ```
 
-To make that default for interactive shells, add this to the managed Zsh
-configuration:
+After taking a fresh snapshot, the agent can use the generated element
+references with `click`, `fill`, and `eval`, or open another tab:
+
+```bash
+terminal-browser action --browser <browser-key> --tab <tab-id> -- click @e22
+terminal-browser action --browser <browser-key> --tab <tab-id> -- fill @e56 '3'
+terminal-browser new-tab --browser <browser-key> https://terminal-browser.com
+```
+
+Browser keys, tab IDs, and element references are generated at runtime and
+must not be hard-coded. Agents should run terminal-browser commands with
+host/escalated permission because their sandboxes can block pane detection.
+
+### Herdr and resumed agent sessions
+
+On this workspace, Herdr 0.8.2 creates a terminal-browser split and an agent
+can successfully use `snapshot`, `click`, and `eval`, but the Herdr browser
+pane renders empty. This is a terminal graphics transport problem, not a
+Chromium or browser-control failure.
+
+Treat Herdr as unsupported for the visible renderer here. Herdr can still host
+the agent session that controls a browser launched from a separate
+Ghostty/Kitty pane.
+
+An agent-issued `terminal-browser open` may also report `This terminal cannot
+show images` because agent commands run through a tool pipe or PTY rather than
+the human terminal's real input/output stream. Launching directly from the
+human terminal avoids that problem.
+
+Browser rendering belongs to its terminal PTY, not to the agent conversation.
+Resuming the same thread elsewhere does not move or recreate the visible
+browser. If its pane remains open, the resumed agent session can rediscover it
+with `terminal-browser ls --all --json`; otherwise, launch it again directly.
+
+When several browser sessions exist, always select the intended `--browser`
+and `--tab` explicitly.
+
+To make software rendering the default for interactive shells, add this to the
+managed Zsh configuration:
 
 ```bash
 export TERMINAL_BROWSER_DISABLE_GPU=1
 ```
-
-The terminal client must support the Kitty graphics protocol. The current
-Herdr terminal does.
 
 ## After a workspace or machine restart
 
@@ -139,10 +192,17 @@ TERMINAL_BROWSER_DISABLE_GPU=1 \
 
 ## Grafana smoke test
 
-Open Grafana Play's public Explore page:
+From a real Ghostty/Kitty pane, open Grafana Play's public Explore page:
 
 ```bash
-terminal-browser new-tab https://play.grafana.org/explore
+TERMINAL_BROWSER_DISABLE_GPU=1 \
+  terminal-browser open https://play.grafana.org/explore
+```
+
+If a visible browser is already running, the agent can add the tab with:
+
+```bash
+terminal-browser new-tab --browser <browser-key> https://play.grafana.org/explore
 ```
 
 In the `-- Grafana --` test datasource, select the **Random Walk** query and
@@ -182,6 +242,10 @@ and must not be hard-coded.
 | `Could not open the default X display` or EGL initialization errors | No usable headless GPU path | Launch with `TERMINAL_BROWSER_DISABLE_GPU=1` |
 | `daemon did not start` | Electron exited before opening its control socket | Inspect the daemon log described below |
 | `no vscode-family editors found` | No VS Code settings were discovered | Harmless; continue |
+| Herdr opens a split but the pane is empty | Herdr is not displaying the browser's terminal graphics stream in this environment | Launch the visible browser directly in Ghostty/Kitty and let the agent control it from Herdr |
+| The agent reports `This terminal cannot show images` | The command is running through a tool pipe or PTY that cannot answer the Kitty graphics probe | Run `terminal-browser open` directly in a graphics-capable terminal pane |
+| Browser control works but nothing is visible | The browser control plane is healthy but the terminal pixel transport failed | Relaunch the visible renderer directly from Ghostty/Kitty |
+| The agent controls the wrong browser after a resume | Multiple browser sessions are registered | Run `terminal-browser ls --all --json` and explicitly select `--browser` and `--tab` |
 
 The main daemon error log is under:
 
