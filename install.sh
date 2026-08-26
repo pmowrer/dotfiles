@@ -187,6 +187,35 @@ prepare_stow_targets() {
   backup_conflicting_target_if_needed ".p10k.zsh" "zsh/.p10k.zsh"
   backup_conflicting_target_if_needed ".gitconfig" "git/.gitconfig"
   backup_conflicting_target_if_needed ".config/ghostty/config" "ghostty/.config/ghostty/config"
+  backup_conflicting_target_if_needed ".claude/CLAUDE.md" "claude/.claude/CLAUDE.md"
+  backup_conflicting_target_if_needed ".codex/AGENTS.md" "codex/.codex/AGENTS.md"
+}
+
+link_repo_root() {
+  local link="$HOME/.dotfiles"
+
+  # The stowed agent instruction files reference runbooks through this stable
+  # path, so it must resolve regardless of where the repo was cloned: Coder
+  # clones it under ~/.config/coderv2/dotfiles, a laptop checkout lives
+  # wherever the user put it.
+  if [[ "$REPO_ROOT" == "$link" ]]; then
+    return
+  fi
+
+  if [[ -L "$link" ]]; then
+    if [[ "$link" -ef "$REPO_ROOT" ]]; then
+      return
+    fi
+
+    rm -f -- "$link"
+  elif [[ -e "$link" ]]; then
+    echo "Warning: $link exists and is not a symlink; leaving it unchanged." >&2
+    echo "Agent instruction files may reference runbooks that do not resolve." >&2
+    return
+  fi
+
+  ln -s "$REPO_ROOT" "$link"
+  echo "Linked $link -> $REPO_ROOT"
 }
 
 install_oh_my_zsh_if_missing() {
@@ -220,9 +249,9 @@ run_stow() {
   echo "If conflicts exist, Stow should fail loudly so collisions can be resolved manually."
   # Ensure parent dirs exist so stow can fold individual files into them
   # without trying to symlink whole shared trees like ~/.config.
-  mkdir -p "$HOME/.config/ghostty"
-  stow -n -v --no-folding -t "$HOME" zsh git ghostty
-  stow -v --no-folding -t "$HOME" zsh git ghostty
+  mkdir -p "$HOME/.config/ghostty" "$HOME/.claude" "$HOME/.codex"
+  stow -n -v --no-folding -t "$HOME" zsh git ghostty claude codex
+  stow -v --no-folding -t "$HOME" zsh git ghostty claude codex
 }
 
 configure_codex_defaults() {
@@ -283,6 +312,7 @@ esac
 verify_required_tools
 install_oh_my_zsh_if_missing
 install_plugins_and_theme
+link_repo_root
 prepare_stow_targets
 run_stow
 configure_codex_defaults
