@@ -20,7 +20,7 @@ if [[ -z "${HOMEBREW_PREFIX:-}" ]]; then
   unset _brew_candidate
 fi
 
-# ~/.local/bin holds user-installed binaries (hivemind, awp, herdr). It goes
+# ~/.local/bin holds user-installed binaries. It goes
 # after the Homebrew block so it wins for tools that exist in both places;
 # the running herdr server is the ~/.local/bin copy.
 path=("$HOME/.local/bin" $path)
