@@ -6,6 +6,11 @@
 # .zprofile re-run `brew shellenv` without entries piling up.
 typeset -U path PATH
 
+# Powerlevel10k starts one gitstatusd per interactive shell. Its CPU-based
+# worker default can exhaust the workspace task limit across many Herdr panes.
+# Keep the default small while honoring an explicit environment override.
+export GITSTATUS_NUM_THREADS="${GITSTATUS_NUM_THREADS:-2}"
+
 if [[ -z "${HOMEBREW_PREFIX:-}" ]]; then
   for _brew_candidate in \
     /home/linuxbrew/.linuxbrew/bin/brew \
