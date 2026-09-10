@@ -10,6 +10,7 @@ Personal dotfiles managed with GNU Stow, with bootstrap automation in `install.s
 - `ghostty/` – Ghostty terminal config under `.config/ghostty/config` (works on macOS and Linux; ignored if Ghostty is not installed).
 - `scripts/configure-codex-defaults.sh` – preserves the existing Codex config while making Vim mode the default for new sessions.
 - `scripts/configure-claude-defaults.sh` – same idea for Claude Code: merges `"editorMode": "vim"` into `~/.claude/settings.json` without disturbing the rest of the file.
+- `skills/` – agent skills shared by Claude Code and Codex, one directory per skill.
 - `claude/` – Claude Code instructions under `.claude/CLAUDE.md`.
 - `codex/` – Codex instructions under `.codex/AGENTS.md`.
 - [`docs/terminal-browser.md`](docs/terminal-browser.md) – recovery guide for running terminal-browser on a headless Ubuntu 24.04 Coder workspace.
@@ -75,6 +76,26 @@ The installer sets `"editorMode": "vim"` in `~/.claude/settings.json` (or `$CLAU
 
 Claude Code owns this file and rewrites it when you change settings from inside the TUI, and other tooling adds hooks and status lines to it, so it is merged with `jq` rather than stowed. Existing keys are preserved and the updater is idempotent. Toggling with `/vim` inside a session writes the same key, so the two stay consistent.
 
+### Shared agent skills
+
+Claude Code and Codex both discover skills as `<config-dir>/skills/<name>/SKILL.md`
+and read the same frontmatter, so one source directory serves both. `skills/`
+holds them, and `link_agent_skills` symlinks each one into `~/.claude/skills/`
+and `~/.codex/skills/`.
+
+This is the one thing Stow cannot express: two targets resolve to the same
+source, which a package tree cannot mirror. The installer links the skill
+*directory* rather than its files, so adding a file to a skill needs no re-run.
+
+Write skill bodies agent-neutrally, since both agents read the same text. A
+skill may still carry agent-specific metadata beside it — `rfc-writer` ships
+an `agents/openai.yaml` that only Codex reads — and if one ever has to diverge
+outright, install per-agent variants instead of branching inside the body.
+
+Skills installed by other tools are left alone. `terminal-browser` symlinks
+itself into both config directories from its own install prefix, and is not
+managed here.
+
 ### Agent instruction files
 
 `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` are stowed from `claude/` and
@@ -112,6 +133,7 @@ The installer is designed to be safely re-runnable:
 - Plugin/theme repositories are only cloned when their target directories are missing.
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
 - The `~/.dotfiles` symlink is only rewritten when it points somewhere else, and is left alone if a real file or directory occupies that path.
+- Skill links are only created when missing; a correct link is left as-is, and anything else occupying the name is backed up first.
 - The Codex config updater only changes the Vim-mode default and leaves an already-correct config untouched.
 - The Claude Code settings updater behaves the same way, and refuses to write if `settings.json` is not valid JSON.
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "RFC Writer"
+  short_description: "Develop RFCs from aligned skeletons"
+  default_prompt: "Use $rfc-writer to scaffold an RFC skeleton before drafting prose."

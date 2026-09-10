@@ -254,6 +254,42 @@ run_stow() {
   stow -v --no-folding -t "$HOME" zsh git ghostty claude codex
 }
 
+link_agent_skills() {
+  local skills_root="$REPO_ROOT/skills"
+  local config_rel skill name link
+
+  if [[ ! -d "$skills_root" ]]; then
+    return
+  fi
+
+  # Claude Code and Codex both discover skills as <config-dir>/skills/<name>/
+  # SKILL.md, so one source directory serves both. Stow cannot express that:
+  # two targets resolve to the same source. Link the skill directory rather
+  # than its files, so adding a file to a skill needs no re-run here.
+  for config_rel in .claude .codex; do
+    mkdir -p "$HOME/$config_rel/skills"
+
+    for skill in "$skills_root"/*/; do
+      if [[ ! -d "$skill" ]]; then
+        continue
+      fi
+
+      skill="${skill%/}"
+      name="$(basename "$skill")"
+      link="$HOME/$config_rel/skills/$name"
+
+      backup_conflicting_target_if_needed "$config_rel/skills/$name" "skills/$name"
+
+      if [[ -e "$link" ]]; then
+        continue
+      fi
+
+      ln -s "$skill" "$link"
+      echo "Linked $link -> $skill"
+    done
+  done
+}
+
 configure_codex_defaults() {
   "$REPO_ROOT/scripts/configure-codex-defaults.sh"
 }
@@ -315,6 +351,7 @@ install_plugins_and_theme
 link_repo_root
 prepare_stow_targets
 run_stow
+link_agent_skills
 configure_codex_defaults
 configure_claude_defaults
 start_hivemind_if_installed
