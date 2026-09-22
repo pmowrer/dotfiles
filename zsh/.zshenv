@@ -30,3 +30,26 @@ fi
 # the running herdr server is the ~/.local/bin copy.
 path=("$HOME/.local/bin" $path)
 export PATH
+
+# Yarn 4 derives its shared cache from globalFolder when enableGlobalCache is
+# active. Keep that state on disposable storage while leaving cacheFolder free
+# for projects that intentionally use a project-local cache.
+typeset _yarn_global_folder="/tmp/yarn-$UID"
+typeset _yarn_cache_folder="$_yarn_global_folder/cache"
+
+(umask 077 && mkdir -m 700 -- "$_yarn_global_folder") 2>/dev/null || true
+if [[ -d "$_yarn_global_folder" && ! -L "$_yarn_global_folder" && -O "$_yarn_global_folder" ]] &&
+  chmod 700 "$_yarn_global_folder"
+then
+  (umask 077 && mkdir -m 700 -- "$_yarn_cache_folder") 2>/dev/null || true
+  if [[ -d "$_yarn_cache_folder" && ! -L "$_yarn_cache_folder" && -O "$_yarn_cache_folder" ]] &&
+    chmod 700 "$_yarn_cache_folder"
+  then
+    export YARN_GLOBAL_FOLDER="$_yarn_global_folder"
+  else
+    unset YARN_GLOBAL_FOLDER
+  fi
+else
+  unset YARN_GLOBAL_FOLDER
+fi
+unset _yarn_global_folder _yarn_cache_folder
