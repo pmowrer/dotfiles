@@ -96,6 +96,22 @@ Skills installed by other tools are left alone. `terminal-browser` symlinks
 itself into both config directories from its own install prefix, and is not
 managed here.
 
+### Third-party skills
+
+Skills this repo does not author are installed by the `skills` CLI from their
+source repositories, listed in `third_party_skills` in `install.sh`. They land
+in `~/.agents/skills/`, which Codex and the other universal agents read
+directly; Claude Code needs a link, which it gets.
+
+`skills add --yes` copies into the agent directory rather than symlinking, so
+the installer points Claude Code back at the canonical copy afterwards. That
+keeps one copy on disk and lets `npx skills update` reach both agents. The step
+runs on every bootstrap and re-fetches, so it is not a no-op, and a failure is
+reported rather than fatal — a missing skill is not worth an unusable shell.
+
+`node` is in the dependency list for this step, since the CLI runs through
+`npx`.
+
 ### Agent instruction files
 
 `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` are stowed from `claude/` and
@@ -134,6 +150,7 @@ The installer is designed to be safely re-runnable:
 - Stow operations can be re-run to keep symlinks aligned with repo contents.
 - The `~/.dotfiles` symlink is only rewritten when it points somewhere else, and is left alone if a real file or directory occupies that path.
 - Skill links are only created when missing; a correct link is left as-is, and anything else occupying the name is backed up first.
+- Third-party skill installs re-run each time and end in the same state, with the Claude Code entry normalized back to a link.
 - The Codex config updater only changes the Vim-mode default and leaves an already-correct config untouched.
 - The Claude Code settings updater behaves the same way, and refuses to write if `settings.json` is not valid JSON.
 

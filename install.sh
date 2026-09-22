@@ -5,8 +5,16 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ZSH_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="${ZSH_DIR}/custom"
-required_tools=(git curl zsh stow gh lazygit jq)
-brew_packages=(git curl zsh stow gh lazygit jq claude-code codex herdr)
+required_tools=(git curl zsh stow gh lazygit jq node)
+brew_packages=(git curl zsh stow gh lazygit jq node claude-code codex herdr RizRiyz/luvus/luvus glow)
+
+# Third-party skills, as "<source> <skill>" pairs. These live in
+# ~/.agents/skills rather than this repo, since the `skills` CLI owns them and
+# tracks their source and version in ~/.agents/.skill-lock.json.
+third_party_skills=(
+  "humanlayer/skills show-me"
+  "vercel-labs/skills find-skills"
+)
 
 brew_command_for_package() {
   local package="$1"
@@ -14,6 +22,9 @@ brew_command_for_package() {
   case "$package" in
     claude-code)
       echo "claude"
+      ;;
+    RizRiyz/luvus/luvus)
+      echo "luvus"
       ;;
     *)
       echo "$package"
@@ -290,6 +301,32 @@ link_agent_skills() {
   done
 }
 
+install_third_party_skills() {
+  local entry source skill
+
+  # Only claude-code needs an explicit target. Codex and the other universal
+  # agents read ~/.agents/skills directly, which is where the canonical copy
+  # lands. A failure here is not fatal: it costs a skill, not a working shell.
+  for entry in "${third_party_skills[@]}"; do
+    read -r source skill <<< "$entry"
+
+    echo "Installing skill $skill from $source..."
+    if ! npx --yes skills add "$source" --global --skill "$skill" --agent claude-code --yes; then
+      echo "Could not install $skill; retry with 'npx skills add $source --skill $skill'."
+      continue
+    fi
+
+    # `skills add --yes` copies into the agent directory rather than
+    # symlinking, which the interactive install offers and recommends. Point
+    # Claude Code back at the canonical copy so an update reaches both agents.
+    if [[ -d "$HOME/.agents/skills/$skill" && ! -L "$HOME/.claude/skills/$skill" ]]; then
+      rm -rf -- "$HOME/.claude/skills/$skill"
+      ln -s "$HOME/.agents/skills/$skill" "$HOME/.claude/skills/$skill"
+      echo "Relinked $HOME/.claude/skills/$skill to the canonical copy."
+    fi
+  done
+}
+
 configure_codex_defaults() {
   "$REPO_ROOT/scripts/configure-codex-defaults.sh"
 }
@@ -352,6 +389,7 @@ link_repo_root
 prepare_stow_targets
 run_stow
 link_agent_skills
+install_third_party_skills
 configure_codex_defaults
 configure_claude_defaults
 start_hivemind_if_installed
