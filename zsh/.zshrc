@@ -1,3 +1,12 @@
+# Check the terminal capabilities Zsh actually uses before initializing the
+# prompt. Homebrew's infocmp can find entries that system Zsh cannot load.
+if [[ -n "${SSH_CONNECTION:-}" ]]; then
+  zmodload zsh/terminfo
+  if [[ -z "${terminfo[cup]-}" ]]; then
+    export TERM=xterm-256color
+  fi
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -13,14 +22,6 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git gh vi-mode zsh-autosuggestions zsh-syntax-highlighting)
 
 source "$ZSH/oh-my-zsh.sh"
-
-# Fall back to xterm-256color when the remote box lacks the advertised
-# terminfo entry (e.g. Ghostty's xterm-ghostty over SSH). Avoids the
-# "terminal is not fully functional" warnings and the doubled-character /
-# broken-backspace symptoms that follow from a missing terminfo.
-if [[ -n "$SSH_CONNECTION" ]] && ! infocmp "$TERM" >/dev/null 2>&1; then
-  export TERM=xterm-256color
-fi
 
 # Ensure backspace works reliably across SSH terminal variants.
 bindkey '^?' backward-delete-char
