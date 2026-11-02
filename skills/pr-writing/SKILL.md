@@ -80,19 +80,21 @@ otherwise depend on context the reviewer lacks. A few sentences is typical.
 **Summary** is the headline: one or two sentences saying what the PR allows or
 changes, in behavior or capability terms, such as "Run expired service account
 token cleanup every minute instead of once per hour." A short list can follow
-when the change has a few distinct cases. Columns, triggers, constraints, error
-codes, and file paths don't belong here. Open with the change itself or the
+when the change has a few distinct cases. Columns, triggers, joins, error
+codes, file paths, measurements, and verification don't belong here. Open with the change itself or the
 background it needs, not with a bare dependency such as "Builds on #123 by…".
 For a large diff, one clause of orientation is enough, such as "most of the
 diff is new integration tests". Don't count lines or list files.
 
 **Why** gives the concrete need. Name the scenario that fails or can't happen
 today, or show how the change fits the larger initiative, in terms a
-product-aware engineer recognizes. A Why that restates the implementation is a
-Summary. If the design isn't the obvious one, name the obvious approach and say
-why it loses, such as on load, cost, or safety. A short paragraph is usually
-enough. If the evidence supports no reason, ask the user rather than inventing
-one.
+product-aware engineer recognizes. Ground it in one real case from the code,
+tests, or ticket, such as a specific action, request, or record the change
+affects. A category on its own, such as "some users lose access", draws "Like
+what?". A Why that restates the implementation is a Summary. If the design
+isn't the obvious one, name the obvious approach and say why it loses, such as
+on load, cost, or safety. A short paragraph is usually enough. If the evidence
+supports no reason, ask the user rather than inventing one.
 
 **Explanatory sections** explain the one or two ideas a reviewer needs to judge
 the design, headed by what they explain, for example "How the cache is notified"
@@ -101,7 +103,9 @@ constraint, or check the diff touches; the diff already shows those. Prefer
 real artifacts:
 
 - Schema changes go in a `diff` block of the affected tables, with a short
-  `# comment` saying what each new or changed field means.
+  `# comment` saying what each new or changed field means. Let the block carry
+  the schema. After it, add at most one plain sentence on what it enforces;
+  don't restate its keys, constraints, or triggers in prose.
 - Allowed and rejected combinations go in a matrix table.
 - An example uses real rows or values taken from the code, fixtures, or tests.
   Never invent a presentation format or values the system can't produce.
@@ -111,6 +115,15 @@ Keep tables readable: one item per row, with the real names.
 Explain an implementation choice only when a reviewer will see it in the diff
 and wonder why, such as a simpler design that was rejected or a function
 rewritten in another language for plan reuse. Don't narrate what the code does.
+
+When the mechanism is the point, as in a performance or correctness fix, explain
+it at the depth of a teammate who hasn't read this code: what the work has to
+do, what made it slow or wrong, and what changed. Describe each object by what
+it is ("a combined list of active and archived workspaces"), not by its
+identifier. Say what the engine does in plain words ("it scans the whole list
+once per row") rather than in its own terms ("nested loop", "can't flatten the
+UNION member"). Round counts are enough. Name the section for the reader's
+question, such as "What made the view slow", not for the code.
 
 **Risks** collects more noise than any other section. Keep a risk only if a
 reviewer who missed it would misjudge the PR: they would assume it ships
@@ -122,7 +135,9 @@ timeout or limit, or the largest real case. Leave out:
 - Test coverage. "A mistake here would grant access; the tests cover A, B, and
   C" is a test list, not a risk.
 - Protections carried over unchanged from earlier work. They are status quo. A
-  protection this PR adds is a different matter.
+  security change this PR introduces is a different matter: say who can reach
+  it and why that is safe, for example which roles can run a new privileged
+  path.
 - Numbers that show no problem, such as sub-millisecond lookups far under any
   limit, or a cost that appears only under a setting nobody uses.
 - Routine migration mechanics such as locks, ordering, and rollback. If
@@ -151,13 +166,22 @@ and restatements of the Summary's or Why's claims don't belong.
   semicolons. A little informality is fine.
 - Use the system's real names consistently. Introduce each term or identifier
   before relying on it. Don't coin labels while drafting ("resolver", "cache
-  roles", "target-aware source"). Don't put plain words in code format, where
-  they look like identifiers.
+  roles", "target-aware source"). A word inside an identifier isn't a term the
+  reader knows: call a role named `billing_writer` by that name, not "the
+  writer". Don't put plain words in code format, where they look like
+  identifiers.
 - Describe what changes. Don't reassure that existing behavior stays unless a
-  reviewer has a concrete reason to think it changed. Don't present an obvious
-  design choice as a feature or a risk.
+  reviewer has a concrete reason to think it changed. A refactor or performance
+  change keeps its results by definition, so don't say it does or report the
+  parity checks. Don't present an obvious design choice as a feature or a
+  risk.
 - Give every number a baseline and, where one applies, the limit it is measured
   against. Prefer relative change when absolute values are hard to judge.
+- Every number and table row should show a difference the reader cares about.
+  Cut a row that barely differs from its neighbor, and leave out how the numbers
+  were measured unless the method changes how to read them. If the numbers
+  raise an obvious question, such as one environment not improving, answer it
+  in a few plain sentences.
 - Describe the final change against the base branch. Leave out draft history,
   intermediate revisions, and approaches the reviewer never saw.
 - Don't mention a capability as if it exists or ships when it doesn't.
@@ -194,6 +218,8 @@ not by adding another sentence.
 - Isn't this already true today? If so, delete it.
 - Is that supported yet? Is it accurate on the base branch? Check the code.
 - So what? If the reviewer gains nothing, delete it.
+- Could a teammate who hasn't read this code follow it? If not, describe the
+  thing in plain words instead of its identifiers and internals.
 - Does the content answer its heading?
 
 Then check the whole draft:

@@ -14,7 +14,8 @@ the shape the change calls for.
 5. Performance scoping with an honest limitation
 6. Design choice and quantified risks
 7. What the author cut from an agent draft
-8. Sentence-level rewrites
+8. Mechanism at the reviewer's depth
+9. Sentence-level rewrites
 
 ---
 
@@ -291,7 +292,63 @@ became "one function call per candidate member/workspace pair". The Why's
 placeholder became the staging baseline, which the agent had asked for instead
 of guessing.
 
-## 8. Sentence-level rewrites
+## 8. Mechanism at the reviewer's depth
+
+A third PR in the same system makes the full read of the cache view fast
+enough for the proxy to switch to it. The agent's draft was about as long as
+the author's final version. This time the author rewrote it rather than cut it.
+
+The draft's mechanism section:
+
+> ## Why the workspace join is slow on master
+>
+> Two branches of `eligible_grant` grant a role's actions in the workspace that
+> owns it: one for roles assigned to a member, one for roles assigned to a
+> group. On master, both join `target`, which reads `active_target`, a UNION ALL
+> of active workspaces and parent workspaces. Its active-workspace member
+> filters on `is_active`, and PostgreSQL can't flatten a UNION member that has
+> a WHERE clause into the surrounding join, so the join can't look workspaces
+> up by primary key.
+>
+> In prod, the planner underestimates the rows entering these joins and picks
+> nested loops, which rescan all 420 active workspaces for each row: 11,860
+> times in the group branch and 940 times in the direct branch.
+
+The author's reaction: "Waaay too dense for anyone without deep context of the
+PR to follow along… talk about it at a higher level that doesn't go deep in
+the weeds where intimate knowledge of the view's SQL is required." The
+published section:
+
+> ## What made the new view slower
+>
+> The new view works out each member's actions in every workspace they can
+> access. To match roles to workspaces, it joins a combined list of active
+> workspaces and parent workspaces. That list combines two tables and filters
+> out inactive workspaces, so PostgreSQL can't look one workspace up in it by
+> index. When the planner underestimates how many roles it has to match, it
+> scans the whole list once per role instead. In prod it scanned all 420
+> active workspaces about 12,800 times, which was most of the read's time.
+
+- **The heading asks the reader's question,** not the code's.
+- **Objects are described by what they are** ("a combined list of active
+  workspaces and parent workspaces"), not by CTE and view names.
+- **The engine's behavior is in plain words** ("scans the whole list once per
+  role"), not planner vocabulary. One rounded count replaces two exact ones.
+
+The author made three more changes:
+
+- **Cut a row-parity claim from the Summary** ("returns the same rows as on
+  master: all of them match in prod and staging"): "that's stating the
+  obvious. Obviously improving the performance doesn't imply we can change
+  what it returns. It's a refactor."
+- **Cut a timing-table row** that compared runs with and without parallel
+  workers: "What's the parallel workers about? The measurements seem pretty
+  much the same." The table now compares production and staging instead.
+- **Added a short sub-section** on why staging doesn't improve, after asking
+  "Why is the new view slower on staging?" The numbers raised the question,
+  so the description answers it.
+
+## 9. Sentence-level rewrites
 
 These illustrations use a made-up service, so they won't be copied literally.
 
