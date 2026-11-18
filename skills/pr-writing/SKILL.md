@@ -36,9 +36,12 @@ reviewer has what they need to read the diff well.
 
 Read the diff against the intended base, the commits, the linked ticket and its
 parent epic, the repository's PR template and PR guidance, and related PRs. Read
-enough surrounding code to make every claim true on the base branch. Treat an
-existing PR body as a source of links and still-valid facts, not as a shape to
-preserve.
+enough surrounding code to support each claim and distinguish existing behavior
+from what this PR introduces. For a flag or configuration change, check the
+behavior in the implementation and version it configures; a design plan alone
+does not establish shipped behavior. Treat an existing PR body as a source of
+links and still-valid facts, not as a shape to preserve. When feedback rejects
+its focus, rebuild the description rather than line-editing it.
 
 For a stacked PR, describe only this PR's delta. GitHub already shows the stack
 order, base, and dependencies, so don't restate them. A prior PR may appear when
@@ -52,8 +55,14 @@ description.
 
 ## Size the description to the change
 
-A small, self-explanatory change needs one to three plain sentences and no
-headings: what changes, and why if that isn't obvious.
+Size the description by what the reviewer needs to understand, not the number
+of changed lines. A small, self-explanatory change needs a short paragraph and
+no headings: what changes, and why if that isn't obvious.
+
+A flag-only diff can enable substantial behavior. Explain what becomes possible,
+for which users or callers, and why the project enables it here. Naming the flag
+and its new value does not explain its effect. Use another short paragraph when
+the behavior needs one.
 
 A substantive change gets sections chosen for its content, typically in this
 order:
@@ -77,14 +86,24 @@ change needs it.
 and how it works today, so the change makes sense. Use it when the Summary would
 otherwise depend on context the reviewer lacks. A few sentences is typical.
 
-**Summary** is the headline: one or two sentences saying what the PR allows or
-changes, in behavior or capability terms, such as "Run expired service account
-token cleanup every minute instead of once per hour." A short list can follow
-when the change has a few distinct cases. Columns, triggers, joins, error
-codes, file paths, measurements, and verification don't belong here. Open with the change itself or the
-background it needs, not with a bare dependency such as "Builds on #123 by…".
-For a large diff, one clause of orientation is enough, such as "most of the
-diff is new integration tests". Don't count lines or list files.
+**Summary** tells the reviewer what the PR changes. Identify the independent
+major changes before writing it. Lead with the behavior or capability, such as
+"Run expired service account token cleanup every minute instead of once per
+hour." Give other major changes their own plain sentence or short bullet;
+don't pack them into the opening sentence to meet a sentence count.
+
+A switch in the source the code reads, the service it calls, or the messages it
+consumes changes how the system works. Name that switch here, with the real
+source names where they help the reviewer, even when its implementation is a
+view or table. State any flag or caller restriction that limits the change.
+A Risk can explain a consequence of the switch; it cannot be the only place
+that tells the reader the switch happens.
+
+Leave incidental columns, joins, error codes, file paths, measurements, and
+verification to the diff or an explanatory section. Open with the change or
+the background it needs, not a bare dependency such as "Builds on #123 by…".
+For a large diff, "most of the diff is new integration tests" can orient the
+reader. Don't count lines or list files.
 
 **Why** gives the concrete need. Name the scenario that fails or can't happen
 today, or show how the change fits the larger initiative, in terms a
@@ -163,16 +182,33 @@ and restatements of the Summary's or Why's claims don't belong.
 ## Write plainly
 
 - Use plain, terse full sentences or clean bullets, not fragments joined by
-  semicolons. A little informality is fine.
+  semicolons or commas. A little informality is fine. Terse means words the
+  reader parses once, not fewer sentences: two plain sentences beat one
+  compressed one.
+- Say who does what, with the real actor as the subject: "Clients choose the
+  response language with the `Accept-Language` header", not "the
+  language a request names in `Accept-Language`". Don't hang a clause off a noun
+  without "that" or "which", don't stack "of" phrases, and don't give objects
+  people's verbs ("a request names", "every request acts in").
+- Say what a structure holds and what that changes, not its shape: "the proxy
+  keeps the latest saved version of each document", not
+  "one cache entry per document at its latest version".
+- Plain doesn't mean broader. When you simplify a claim, keep the limits on who
+  or what it covers, such as which credential, which kind of account, or which
+  flag state: "with self-service exports enabled, signed-in users can export
+  search results; API keys cannot start exports", not "clients can export".
 - Use the system's real names consistently. Introduce each term or identifier
   before relying on it. Don't coin labels while drafting ("resolver", "cache
   roles", "target-aware source"). A word inside an identifier isn't a term the
   reader knows: call a role named `billing_writer` by that name, not "the
   writer". Don't put plain words in code format, where they look like
-  identifiers.
+  identifiers. A version or PR number is not an explanation: say what relevant
+  behavior it supplies, or cut it.
 - Describe what changes. Don't reassure that existing behavior stays unless a
-  reviewer has a concrete reason to think it changed. A refactor or performance
-  change keeps its results by definition, so don't say it does or report the
+  reviewer has a concrete reason to think it changed. Keep unchanged behavior
+  when it defines a boundary of the new capability, such as excluded callers
+  or requests without the new input. A refactor or performance change keeps its
+  results by definition, so don't say it does or report the
   parity checks. Don't present an obvious design choice as a feature or a
   risk.
 - Give every number a baseline and, where one applies, the limit it is measured
@@ -193,8 +229,11 @@ and restatements of the Summary's or Why's claims don't belong.
 Drafts come out long, and the author's edits are mostly cuts. After drafting,
 reread the draft and delete:
 
-- What the diff shows directly: column lists, trigger and function behavior,
-  grants, file paths, and line counts.
+- Inventories of columns, functions, grants, paths, and line counts that add
+  no explanation beyond the diff. Keep major source or contract changes and
+  the artifacts that explain behavior: a boundary table can make allowed and
+  rejected combinations clear in a way that a paragraph cannot. Cut prose
+  that repeats the table rather than cutting the table for brevity.
 - Risks, notes, and test-plan items that fail the tests above.
 - Sentences that repeat an earlier section.
 - Background the reviewer already has.
@@ -208,16 +247,20 @@ question unanswered.
 
 Reread the draft as the reviewer would. The author's corrections usually arrive
 as a reviewer's question about one sentence, so ask these questions of every
-sentence. Answer a question by making the sentence more precise or deleting it,
-not by adding another sentence.
+sentence. Make it more precise, split it when it carries several ideas, or
+delete it when the reviewer gains nothing. Preserve the limits on who or what
+it describes when you split or shorten it.
 
 - What does this term mean? Has it been introduced, and is it the system's real
   name?
 - Like what? Which ones? Replace a vague claim with the concrete case.
 - Compared with what? A number needs a baseline or yardstick.
-- Isn't this already true today? If so, delete it.
+- Isn't this already true today? Keep it only if it explains a boundary the
+  reviewer could otherwise misunderstand.
 - Is that supported yet? Is it accurate on the base branch? Check the code.
 - So what? If the reviewer gains nothing, delete it.
+- Can you read it aloud once without backing up? If not, split it and put the
+  actor first.
 - Could a teammate who hasn't read this code follow it? If not, describe the
   thing in plain words instead of its identifiers and internals.
 - Does the content answer its heading?
@@ -225,6 +268,8 @@ not by adding another sentence.
 Then check the whole draft:
 
 - After the first paragraph, can a reviewer say what work the PR represents?
+- Does the Summary cover each major change, or is one disclosed only in Risks
+  or Notes? Check against the changes you identified before drafting.
 - Does every section earn its place?
 - Is anything below the explanatory sections there because the implementer
   knows it, rather than because the reviewer needs it?
@@ -233,7 +278,8 @@ Then check the whole draft:
 
 Name the concrete behavior or capability, briefly, in the repository's title
 convention, such as conventional commits. Prefer plain words over a long
-identifier. If the PR already has a title that does this, keep it. Use the terms
+identifier, and don't compress a mechanism into the title ("serve the language
+a request names in Accept-Language"). If the PR already has a title that does this, keep it. Use the terms
 the description uses, not jargon from drafting. Keep rationale, validation, and
 ticket references out of the title unless the repository requires them.
 
@@ -252,3 +298,7 @@ descriptions the author wrote or approved, and before-and-after rewrites,
 including what the author cut from an agent draft. Take the reasoning behind
 each element. Don't copy a heading or section into a PR whose content doesn't
 call for it.
+
+For a small flag or configuration change, read
+[example 10](references/examples.md#10-a-one-line-flag-change-that-enables-a-capability)
+for explaining enabled behavior without recapping deployment history.
