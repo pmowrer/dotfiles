@@ -1,9 +1,9 @@
 # Annotated examples
 
-These are descriptions the author wrote or approved, with notes on why each part
-is there. Names, numbers, and ticket keys are changed; the structure and the
-author's phrasing are kept. The shapes differ because the changes differ. Pick
-the shape the change calls for.
+These examples include descriptions the author wrote or approved and explicitly
+fictional illustrations. In adapted descriptions, names, numbers, and ticket
+keys are changed; the structure and the author's phrasing are kept. The shapes
+differ because the changes differ. Pick the shape the change calls for.
 
 ## Contents
 
@@ -17,6 +17,7 @@ the shape the change calls for.
 8. Mechanism at the reviewer's depth
 9. Sentence-level rewrites
 10. A one-line flag change that enables a capability
+11. New API operations at a glance
 
 ---
 
@@ -411,3 +412,32 @@ Two short paragraphs explain the change without headings:
   explicit author confirmation. A plan for an unreleased change is insufficient.
 - Deployment steps belong when they affect a review decision. They do not
   substitute for explaining the enabled behavior.
+
+
+## 11. New API operations at a glance
+
+This fictional document editor adds a comment API. A paragraph saying that
+callers can list, add, edit, and delete comments leaves them to find the actual
+operations in the diff. A small table makes that surface visible:
+
+> ## Summary
+>
+> Add an API for listing and managing comments on documents.
+>
+> ## Comment API
+>
+> | Method | Route | Purpose |
+> |---|---|---|
+> | GET | `/documents/{document_id}/comments` | List a document's comments. |
+> | POST | `/documents/{document_id}/comments` | Add a comment to a document. |
+> | PATCH | `/comments/{comment_id}` | Edit a comment. |
+> | DELETE | `/comments/{comment_id}` | Delete a comment. |
+>
+> Callers need access to the document.
+
+- The Summary names the capability; the table shows what a caller can use.
+- Routes are part of the contract. This is useful orientation, unlike a list
+  of route-handler files or functions.
+- State a shared access rule once. Add a column when permissions or scope
+  differ across operations. For a request sequence or relationship, a small
+  diagram may answer the question better than a table.

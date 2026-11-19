@@ -131,6 +131,13 @@ real artifacts:
   the schema. After it, add at most one plain sentence on what it enforces;
   don't restate its keys, constraints, or triggers in prose.
 - Allowed and rejected combinations go in a matrix table.
+- When API operations are central to the change, show the new or changed
+  surface in a compact table: method or operation, route, and what it does or
+  returns. Add caller or scope distinctions where they matter. Use actual
+  routes from the diff; leave exhaustive parameters and schemas to the API
+  reference. This table explains the contract, rather than inventorying files.
+- Use a small diagram when relationships or request flow are the main thing
+  to understand. Choose the artifact that answers the reviewer's question.
 - An example uses real rows or values taken from the code, fixtures, or tests.
   Never invent a presentation format or values the system can't produce.
 
@@ -239,9 +246,9 @@ reread the draft and delete:
 
 - Inventories of columns, functions, grants, paths, and line counts that add
   no explanation beyond the diff. Keep major source or contract changes and
-  the artifacts that explain behavior: a boundary table can make allowed and
-  rejected combinations clear in a way that a paragraph cannot. Cut prose
-  that repeats the table rather than cutting the table for brevity.
+  the artifacts that explain behavior. An API table can show the callable
+  surface; a boundary table can clarify allowed and rejected combinations.
+  Cut prose that repeats the table rather than cutting the table for brevity.
 - Risks, notes, and test-plan items that fail the tests above.
 - Sentences that repeat an earlier section.
 - Background the reviewer already has.
