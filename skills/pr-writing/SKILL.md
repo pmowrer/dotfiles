@@ -92,6 +92,11 @@ major changes before writing it. Lead with the behavior or capability, such as
 hour." Give other major changes their own plain sentence or short bullet;
 don't pack them into the opening sentence to meet a sentence count.
 
+Describe an intended capability in terms of what users or callers can now do,
+including material changes in which data they can see. A lookup or source change
+alone may not explain that effect. Put the capability here even when a Risk also
+discusses it.
+
 A switch in the source the code reads, the service it calls, or the messages it
 consumes changes how the system works. Name that switch here, with the real
 source names where they help the reviewer, even when its implementation is a
@@ -149,7 +154,9 @@ reviewer who missed it would misjudge the PR: they would assume it ships
 something it doesn't, miss a consumer that will break or log errors, or miss a
 real performance, limit, or security concern. Give each risk you keep its
 concrete effect and a yardstick, such as a relative change, a comparison with a
-timeout or limit, or the largest real case. Leave out:
+timeout or limit, or the largest real case. Make each risk self-contained:
+name the affected behavior and the concrete concern, so the reader does not
+have to infer its connection to the Summary. Leave out:
 
 - Test coverage. "A mistake here would grant access; the tests cover A, B, and
   C" is a test list, not a risk.
@@ -161,7 +168,8 @@ timeout or limit, or the largest real case. Leave out:
   limit, or a cost that appears only under a setting nobody uses.
 - Routine migration mechanics such as locks, ordering, and rollback. If
   something makes them unusual, give it one sentence with a yardstick.
-- Design descriptions disguised as risks.
+- Design descriptions or unimplemented alternatives with no established
+  limitation or harmful outcome.
 
 One to three risks is typical, and none is fine.
 

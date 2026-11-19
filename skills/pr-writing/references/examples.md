@@ -361,6 +361,8 @@ a different system.
 |---|---|---|
 | Adds the combined tenant-scoped source for the quota resolver. | Coined terms the reader has never seen | Adds a view with one row per tenant and region, holding that region's quota. |
 | Existing hourly jobs continue to run unchanged. | Reassures about the status quo | *(delete)* |
+| Risk: Signed-in users can download search results as CSV. | Presents the intended capability as a risk | Summary: With self-service exports enabled, signed-in users can download their search results as CSV. |
+| There is no export-specific response. | Names a missing design without explaining its consequence | *(delete unless the evidence establishes a concrete consequence; then name the affected export and that consequence)* |
 | The main risk is regressions in existing billing queries. | Vague, and draws "Like what?" | Invoice totals now come from `ledger_entry`. A wrong join would show up as a mismatch against last month's totals. |
 | Adds about 40 ms per request. | No baseline or limit | Adds about 40 ms, roughly 15% of today's p50 and well under the 2 s client timeout. |
 | Retries are deduplicated per transaction, and fan-out is limited to affected tenants. | Obvious design presented as a feature | *(delete, or keep only if a reviewer would expect otherwise)* |
