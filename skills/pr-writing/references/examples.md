@@ -1,9 +1,9 @@
 # Annotated examples
 
-These are descriptions the author wrote or approved, with notes on why each part
-is there. Names, numbers, and ticket keys are changed; the structure and the
-author's phrasing are kept. The shapes differ because the changes differ. Pick
-the shape the change calls for.
+These examples include descriptions the author wrote or approved and explicitly
+fictional illustrations. In adapted descriptions, names, numbers, and ticket
+keys are changed; the structure and the author's phrasing are kept. The shapes
+differ because the changes differ. Pick the shape the change calls for.
 
 ## Contents
 
@@ -16,6 +16,8 @@ the shape the change calls for.
 7. What the author cut from an agent draft
 8. Mechanism at the reviewer's depth
 9. Sentence-level rewrites
+10. A one-line flag change that enables a capability
+11. New API operations at a glance
 
 ---
 
@@ -351,11 +353,17 @@ The author made three more changes:
 ## 9. Sentence-level rewrites
 
 These illustrations use a made-up service, so they won't be copied literally.
+The export example assumes that a flag enables signed-in users to export
+search results, while API keys cannot start exports. Carry such limits from
+the evidence into the rewrite; don't borrow this example's permissions for
+a different system.
 
 | Draft | Problem | Rewrite |
 |---|---|---|
 | Adds the combined tenant-scoped source for the quota resolver. | Coined terms the reader has never seen | Adds a view with one row per tenant and region, holding that region's quota. |
 | Existing hourly jobs continue to run unchanged. | Reassures about the status quo | *(delete)* |
+| Risk: Signed-in users can download search results as CSV. | Presents the intended capability as a risk | Summary: With self-service exports enabled, signed-in users can download their search results as CSV. |
+| There is no export-specific response. | Names a missing design without explaining its consequence | *(delete unless the evidence establishes a concrete consequence; then name the affected export and that consequence)* |
 | The main risk is regressions in existing billing queries. | Vague, and draws "Like what?" | Invoice totals now come from `ledger_entry`. A wrong join would show up as a mismatch against last month's totals. |
 | Adds about 40 ms per request. | No baseline or limit | Adds about 40 ms, roughly 15% of today's p50 and well under the 2 s client timeout. |
 | Retries are deduplicated per transaction, and fan-out is limited to affected tenants. | Obvious design presented as a feature | *(delete, or keep only if a reviewer would expect otherwise)* |
@@ -365,3 +373,71 @@ These illustrations use a made-up service, so they won't be copied literally.
 | About 1,100 of the 1,400 added lines are tests, mostly in `tests/integration/test_webhook_retry.py`. | Counts and paths the diff already shows | Most of the diff is new integration tests. |
 | A mistake in the quota views would over- or under-bill a tenant. The tests cover monthly, prorated, and suspended tenants. | Risk that applies to every billing change, plus a test list | *(delete)* |
 | The migration and post-migrate both grant `SELECT` on the new views, so lookups keep working in between. | Implementation housekeeping | *(delete)* |
+| Starts the export of the results a request names in `query`. | Indirect actor and missing credential and flag limits | With self-service exports enabled, signed-in users can export their search results as CSV. API keys cannot start exports. |
+| The cache holds one entry per document at its latest version. | Describes the cache's shape, not what it means | The service caches the latest saved version of each document. |
+| *(The Summary never says the worker now reads a different view; one Risk mentions it in passing.)* | A major change left to the diff | Add it to the Summary: "The worker now reads `ready_export_jobs` instead of `export_jobs`." |
+
+## 10. A one-line flag change that enables a capability
+
+This fictional example concerns CSV exports from a search application. An
+agent describes a QA flag change through its deployment history:
+
+> Set `SELF_SERVICE_EXPORTS_ENABLED: true` in QA. Staging and production keep
+> the default, `false`.
+>
+> The search app already runs 2.4.0 after #246. This replaces the old deployment
+> draft. After merge, promote the QA app manually.
+
+The reviewer needs to know what the flag enables and why QA needs it. Replacing
+that history with ConfigMap names and restart mechanics still misses the point.
+Two short paragraphs explain the change without headings:
+
+> Turn on self-service CSV exports in QA by setting
+> `SELF_SERVICE_EXPORTS_ENABLED` to `true`, so we can test the export workflow
+> before enabling it elsewhere.
+>
+> With the flag on, signed-in users can export their search results as CSV.
+> Each export includes only rows the user can already view. Searching without
+> requesting an export still returns results on screen. API keys cannot start
+> exports.
+
+- The first paragraph names the capability, environment, and reason. A version
+  number explains none of those on its own.
+- The second says what callers can do and where the capability stops. The
+  ordinary-search and API-key cases clarify its scope; the other environments'
+  flag values add no useful distinction here.
+- One changed line can need several sentences. The diff's size does not measure
+  how much behavior it enables.
+- These behavior claims need evidence from the configured implementation or an
+  explicit author confirmation. A plan for an unreleased change is insufficient.
+- Deployment steps belong when they affect a review decision. They do not
+  substitute for explaining the enabled behavior.
+
+
+## 11. New API operations at a glance
+
+This fictional document editor adds a comment API. A paragraph saying that
+callers can list, add, edit, and delete comments leaves them to find the actual
+operations in the diff. A small table makes that surface visible:
+
+> ## Summary
+>
+> Add an API for listing and managing comments on documents.
+>
+> ## Comment API
+>
+> | Method | Route | Purpose |
+> |---|---|---|
+> | GET | `/documents/{document_id}/comments` | List a document's comments. |
+> | POST | `/documents/{document_id}/comments` | Add a comment to a document. |
+> | PATCH | `/comments/{comment_id}` | Edit a comment. |
+> | DELETE | `/comments/{comment_id}` | Delete a comment. |
+>
+> Callers need access to the document.
+
+- The Summary names the capability; the table shows what a caller can use.
+- Routes are part of the contract. This is useful orientation, unlike a list
+  of route-handler files or functions.
+- State a shared access rule once. Add a column when permissions or scope
+  differ across operations. For a request sequence or relationship, a small
+  diagram may answer the question better than a table.
